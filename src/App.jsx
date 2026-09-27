@@ -37,7 +37,6 @@ const REQUIRED_FIELDS = [
    HOOKS PERSONNALISÉS
    ============================================================ */
 
-// Hook pour état persisté (localStorage)
 function usePersistedState(key, defaultValue) {
   const [state, setState] = useState(() => {
     try {
@@ -59,7 +58,6 @@ function usePersistedState(key, defaultValue) {
   return [state, setState];
 }
 
-// Hook pour le thème
 function useTheme() {
   const [isDark, setIsDark] = usePersistedState(THEME_KEY, false);
 
@@ -76,7 +74,6 @@ function useTheme() {
   return { isDark, toggle };
 }
 
-// Hook pour le système de Toast
 function useToast() {
   const [toasts, setToasts] = useState([]);
 
@@ -334,7 +331,6 @@ function validateField(name, value) {
    COMPOSANTS UI
    ============================================================ */
 
-// Toast Container
 function ToastContainer({ toasts, onRemove }) {
   if (!toasts.length) return null;
   const styles = {
@@ -394,7 +390,6 @@ function ToastContainer({ toasts, onRemove }) {
   );
 }
 
-// Modal de confirmation
 function ConfirmModal({ open, title, message, onConfirm, onCancel, confirmLabel = "Confirmer", danger = false }) {
   if (!open) return null;
   return (
@@ -436,7 +431,6 @@ function ConfirmModal({ open, title, message, onConfirm, onCancel, confirmLabel 
   );
 }
 
-// Champ de formulaire
 function Field({ label, required, error, hint, children }) {
   return (
     <div className="block">
@@ -459,7 +453,6 @@ function Field({ label, required, error, hint, children }) {
   );
 }
 
-// Image avec fallback
 function SafeImage({ src, alt, className, fallbackText = "Image" }) {
   const [hasError, setHasError] = useState(false);
   if (hasError) {
@@ -504,6 +497,13 @@ function App() {
   const previewFrameRef = useRef(null);
   const fieldRefs = useRef({});
 
+  // Date formatée pour le PDF (ex: "28 septembre 2026")
+  const currentDate = new Date().toLocaleDateString('fr-FR', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+
   useEffect(() => {
     if (sessionUser) {
       localStorage.setItem(SESSION_KEY, JSON.stringify({ user: sessionUser }));
@@ -524,7 +524,6 @@ function App() {
     pushToast("Déconnexion réussie", "info");
   }, [pushToast]);
 
-  // Resize Observer avec debounce
   useEffect(() => {
     const frame = previewFrameRef.current;
     if (!frame) return;
@@ -548,7 +547,6 @@ function App() {
     };
   }, []);
 
-  // Validation en temps réel
   const handleChange = useCallback((e) => {
     const { name, value } = e.target;
     let safeValue = value;
@@ -583,7 +581,6 @@ function App() {
     pushToast("Formulaire réinitialisé", "success");
   }, [setForm, pushToast]);
 
-  // Focus sur le premier champ en erreur
   const focusFirstError = useCallback((errorFields) => {
     const first = errorFields[0];
     if (first && fieldRefs.current[first]) {
@@ -592,7 +589,6 @@ function App() {
     }
   }, []);
 
-  // Génération PDF
   const generatePdf = useCallback(async () => {
     const currentForm = { ...form };
 
@@ -646,6 +642,10 @@ function App() {
       clone.style.background = "#ffffff";
       clone.style.zIndex = "-1";
       clone.style.opacity = "1";
+      // Assurer que les styles de police sont bien appliqués au clone
+      clone.style.fontFamily = "'Times New Roman', Times, serif";
+      clone.style.fontSize = "12pt";
+      clone.style.lineHeight = "1.5";
 
       const wrapper = document.createElement("div");
       wrapper.style.position = "fixed";
@@ -693,7 +693,6 @@ function App() {
     }
   }, [form, pushToast, focusFirstError]);
 
-  // Raccourci clavier Ctrl/Cmd + Enter
   useEffect(() => {
     const handler = (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
@@ -705,7 +704,6 @@ function App() {
     return () => window.removeEventListener("keydown", handler);
   }, [generatePdf]);
 
-  // Progression
   const filledCount = REQUIRED_FIELDS.filter(({ key }) => (form[key] || "").toString().trim()).length;
   const progress = (filledCount / REQUIRED_FIELDS.length) * 100;
   const isFormValid = filledCount === REQUIRED_FIELDS.length && !Object.values(errors).some(Boolean);
@@ -717,7 +715,6 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-gray-50 text-gray-900 transition-colors duration-300">
-        {/* HEADER */}
         <header className="no-print sticky top-0 z-30 border-b-2 border-green-600 bg-white/95 backdrop-blur-md">
           <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:py-4 gap-3">
             <div className="min-w-0 flex-1">
@@ -755,7 +752,6 @@ function App() {
           </div>
         </header>
 
-        {/* TOASTS */}
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         <Dialog
@@ -801,7 +797,6 @@ function App() {
           </DialogActions>
         </Dialog>
 
-        {/* MODAL RESET */}
         <ConfirmModal
           open={resetModalOpen}
           title="Réinitialiser le formulaire ?"
@@ -812,10 +807,8 @@ function App() {
           onCancel={() => setResetModalOpen(false)}
         />
 
-        {/* MAIN */}
         <main className="mx-auto max-w-7xl px-4 py-4 sm:py-6">
           <div className="grid gap-4 sm:gap-6 lg:grid-cols-[minmax(0,420px)_1fr]">
-            {/* FORMULAIRE */}
             <section className="no-print h-fit rounded-2xl bg-white p-4 sm:p-5 shadow-[0_18px_45px_rgba(21,128,61,0.08)] ring-2 ring-green-600/20 border border-green-100">
               <div className="mb-4 border-b-2 border-green-600 pb-3">
                 <h2 className="text-base sm:text-lg font-bold text-green-800">Informations</h2>
@@ -824,7 +817,6 @@ function App() {
                 </p>
               </div>
 
-              {/* PROGRESSION */}
               <div className="mb-5">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-medium text-gray-600">
@@ -987,7 +979,6 @@ function App() {
                 </div>
               </div>
 
-              {/* ACTIONS */}
               <div className="mt-6 grid gap-3 sm:grid-cols-2">
                 <button
                   onClick={generatePdf}
@@ -1024,7 +1015,6 @@ function App() {
               </div>
             </section>
 
-            {/* APERÇU */}
             <section className="min-w-0">
               <div className="no-print mb-3 flex items-center justify-between">
                 <div>
@@ -1049,10 +1039,16 @@ function App() {
                   className="relative mx-auto w-full max-w-[794px] overflow-hidden bg-white shadow-[0_20px_45px_rgba(15,23,42,0.08)]"
                   style={{ height: `${1123 * previewScale}px` }}
                 >
+                  {/* CONTENEUR PRINCIPAL DU DOCUMENT AVEC POLICE TIMES NEW ROMAN, 12PT, 1.5 */}
                   <div
                     ref={documentRef}
                     className="relative h-[1123px] w-[794px] origin-top-left overflow-hidden bg-white text-black"
-                    style={{ transform: `scale(${previewScale})` }}
+                    style={{ 
+                      transform: `scale(${previewScale})`,
+                      fontFamily: "'Times New Roman', Times, serif",
+                      fontSize: "12pt",
+                      lineHeight: "1.5"
+                    }}
                   >
                     <SafeImage
                       src="/assets/logo.png"
@@ -1061,23 +1057,23 @@ function App() {
                       className="absolute left-1/2 top-[58px] h-[82px] w-[82px] -translate-x-1/2 object-contain"
                     />
 
-                    <div className="absolute left-0 right-0 top-[142px] text-center">
-                      <div className="text-[14px] font-bold text-green-800">Plateforme TANTANA</div>
-                      <div className="mt-1 text-[11px] italic text-red-600">
+                    <div className="absolute left-0 right-0 top-[142px] text-center" style={{ fontSize: "12pt", lineHeight: "1.5" }}>
+                      <div className="font-bold text-green-800">Plateforme TANTANA</div>
+                      <div className="mt-1 italic text-red-600">
                         Mpanarina ny hoavin'i Madagasikara
                       </div>
-                      <div className="mt-2 text-[12px] font-semibold">
+                      <div className="mt-2 font-semibold">
                         Région haute Matsiatra
                       </div>
                     </div>
 
-                    <div className="absolute left-0 right-0 top-[225px] text-center">
-                      <div className="text-[15px] font-bold tracking-[0.65em] text-green-800">
+                    <div className="absolute left-0 right-0 top-[225px] text-center" style={{ fontSize: "12pt", lineHeight: "1.5" }}>
+                      <div className="font-bold tracking-[0.65em] text-green-800">
                         O b j e t : &nbsp; O r d r e &nbsp; d e s &nbsp; M i s s i o n s
                       </div>
                     </div>
 
-                    <div className="absolute left-[82px] right-[75px] top-[315px] text-[14px] leading-[2.05]">
+                    <div className="absolute left-[82px] right-[75px] top-[315px]" style={{ fontSize: "12pt", lineHeight: "1.5" }}>
                       <p>
                         Amin'ny anaran'ny Plateforme TANTANA no anomezana alalana an'i {form.civilite} :{" "}
                         <span className="font-bold">{form.nomPrenom || "________________________________"}</span>,
@@ -1092,11 +1088,9 @@ function App() {
                       </p>
                     </div>
 
+                    {/* SIGNATURE DU COORDINATEUR (GAUCHE) */}
                     <div className="absolute bottom-[150px] left-[95px] text-center">
-                      <div className="text-[13px] font-semibold underline text-green-800">
-                        Ny coordonnateur régional
-                      </div>
-                      <div className="mt-12 text-[12px] font-semibold">
+                      <div className="text-[12pt] font-semibold">
                         Coordinateur :{" "}
                         <span className="font-bold">
                           {form.Coordinateur || "________________________________________"}
@@ -1104,6 +1098,14 @@ function App() {
                       </div>
                     </div>
 
+                    {/* DATE AU-DESSUS DU TAMPON (DROITE) */}
+                    <div className="absolute bottom-[270px] right-[92px] text-center w-[165px]">
+                      <div className="text-[12pt] font-semibold italic">
+                        Ny anio, le {currentDate}
+                      </div>
+                    </div>
+
+                    {/* TAMPON (DROITE) */}
                     <div className="absolute bottom-[138px] right-[92px] text-center">
                       <SafeImage
                         src="/assets/tampon.png"
