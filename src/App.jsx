@@ -9,6 +9,7 @@ import { Button, Dialog, DialogActions, DialogContent, DialogContentText, Dialog
 const STORAGE_KEY = "ordre_mission_form_v1";
 const THEME_KEY = "ordre_mission_theme";
 const SESSION_KEY = "tantana_session";
+const TANTANA_COORDINATOR = "TATA Frédéric Marcelin";
 const LOGIN_USERS = {
   TANTANA: "230388",
   "TANTANA-2": "18mars2000",
@@ -504,6 +505,10 @@ function App() {
     year: 'numeric',
   });
 
+  const coordinatorName = sessionUser === "TANTANA"
+    ? TANTANA_COORDINATOR
+    : form.Coordinateur;
+
   useEffect(() => {
     if (sessionUser) {
       localStorage.setItem(SESSION_KEY, JSON.stringify({ user: sessionUser }));
@@ -511,6 +516,12 @@ function App() {
       localStorage.removeItem(SESSION_KEY);
     }
   }, [sessionUser]);
+
+  useEffect(() => {
+    if (sessionUser === "TANTANA" && form.Coordinateur !== TANTANA_COORDINATOR) {
+      setForm((previous) => ({ ...previous, Coordinateur: TANTANA_COORDINATOR }));
+    }
+  }, [sessionUser, form.Coordinateur, setForm]);
 
   const handleLogin = useCallback((user) => {
     setSessionUser(user);
@@ -946,10 +957,11 @@ function App() {
                     ref={(el) => (fieldRefs.current.Coordinateur = el)}
                     name="Coordinateur"
                     maxLength={100}
-                    value={form.Coordinateur}
+                    value={coordinatorName}
+                    readOnly={sessionUser === "TANTANA"}
                     onChange={handleChange}
                     onBlur={handleBlur}
-                    placeholder="Ex. MAMINIAINA Daniella Judie"
+                    placeholder="Ex. TATA Frédéric Marcelin"
                     className={`input ${touched.Coordinateur && errors.Coordinateur ? "input-error" : touched.Coordinateur && !errors.Coordinateur && form.Coordinateur ? "input-success" : ""}`}
                     aria-invalid={!!(touched.Coordinateur && errors.Coordinateur)}
                   />
@@ -1073,7 +1085,10 @@ function App() {
                       </div>
                     </div>
 
-                    <div className="absolute left-[82px] right-[75px] top-[315px]" style={{ fontSize: "12pt", lineHeight: "1.5" }}>
+                    <div
+                      className="absolute left-[82px] right-[75px] top-[315px]"
+                      style={{ fontFamily: "'Times New Roman', Times, serif", fontSize: "12pt", lineHeight: "1.5" }}
+                    >
                       <p>
                         Amin'ny anaran'ny Plateforme TANTANA no anomezana alalana an'i {form.civilite} :{" "}
                         <span className="font-bold">{form.nomPrenom || "________________________________"}</span>,
@@ -1093,9 +1108,17 @@ function App() {
                       <div className="text-[12pt] font-semibold">
                         Coordinateur :{" "}
                         <span className="font-bold">
-                          {form.Coordinateur || "________________________________________"}
+                          {coordinatorName || "________________________________________"}
                         </span>
                       </div>
+                      {sessionUser === "TANTANA" && (
+                        <SafeImage
+                          src="/assets/Signature.png"
+                          alt="Signature de TATA Frédéric Marcelin"
+                          fallbackText="Signature"
+                          className="mx-auto mt-1 h-[120px] w-[240px] object-contain"
+                        />
+                      )}
                     </div>
 
                     {/* DATE AU-DESSUS DU TAMPON (DROITE) */}
