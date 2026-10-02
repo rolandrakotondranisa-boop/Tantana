@@ -1101,35 +1101,42 @@ function App() {
                       <p className="mt-4">
                         Ity fanomezana-dalana ity dia manankery mandritr'io fotoana voalaza io
                       </p>
+                      {sessionUser === "TANTANA" && (
+                        <div className="mt-5 ml-[13px] w-fit text-center">
+                          <div className="text-[12pt] font-semibold">
+                            Coordinateur :{" "}
+                            <span className="font-bold">{coordinatorName}</span>
+                          </div>
+                          <SafeImage
+                            src="/assets/Signature.png"
+                            alt="Signature de TATA Frédéric Marcelin"
+                            fallbackText="Signature"
+                            className="mx-auto mt-1 h-[120px] w-[240px] object-contain"
+                          />
+                        </div>
+                      )}
                     </div>
 
-                    {/* SIGNATURE DU COORDINATEUR (GAUCHE) */}
-                    <div className="absolute bottom-[150px] left-[95px] text-center">
+                    {sessionUser !== "TANTANA" && (
+                      <div className="absolute bottom-[150px] left-[95px] text-center">
                       <div className="text-[12pt] font-semibold">
                         Coordinateur :{" "}
                         <span className="font-bold">
                           {coordinatorName || "________________________________________"}
                         </span>
                       </div>
-                      {sessionUser === "TANTANA" && (
-                        <SafeImage
-                          src="/assets/Signature.png"
-                          alt="Signature de TATA Frédéric Marcelin"
-                          fallbackText="Signature"
-                          className="mx-auto mt-1 h-[120px] w-[240px] object-contain"
-                        />
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     {/* DATE AU-DESSUS DU TAMPON (DROITE) */}
-                    <div className="absolute bottom-[270px] right-[92px] text-center w-[165px]">
+                    <div className={`absolute ${sessionUser === "TANTANA" ? "bottom-[340px]" : "bottom-[270px]"} right-[92px] text-center w-[165px]`}>
                       <div className="text-[12pt] font-semibold italic">
                         Ny anio, le {currentDate}
                       </div>
                     </div>
 
                     {/* TAMPON (DROITE) */}
-                    <div className="absolute bottom-[138px] right-[92px] text-center">
+                    <div className={`absolute ${sessionUser === "TANTANA" ? "bottom-[208px]" : "bottom-[138px]"} right-[92px] text-center`}>
                       <SafeImage
                         src="/assets/tampon.png"
                         alt="Tampon"
